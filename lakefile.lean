@@ -4,6 +4,8 @@ open Lake DSL
 package «advent-of-code» where
   srcDir := "src"
 
+require "leanprover-community" / "mathlib"
+
 lean_exe day1 where
   srcDir := "day1"
 
