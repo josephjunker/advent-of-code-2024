@@ -19,9 +19,34 @@ def isSafeIncreasing (xs : Array Int) : Bool :=
 def isSafeDecreasing (xs : Array Int) : Bool :=
   windowFoldl2 xs (fun acc x y => acc && (x > y) && (x - y <= 3)) true
 
-def solvePartOne (xss : Array (Array Int)) : Int :=
-  (xss.filter fun xs => (isSafeIncreasing xs) || (isSafeDecreasing xs)).size
+def isSafe (xs : Array Int) : Bool :=
+  isSafeIncreasing xs || isSafeDecreasing xs
 
+def solvePartOne (xss : Array (Array Int)) : Int :=
+  (xss.filter isSafe).size
+
+def iterateOmit (xs : Array α) : (Array (Array α)) :=
+  if h: xs.size = 0 then #[] else
+  iterateOmitHelper 0 #[]
+where
+  iterateOmitHelper (i : Nat) (arrs : Array (Array α)) :=
+    if h: i ≥ xs.size then arrs else
+    iterateOmitHelper (i + 1) (arrs.push (xs.eraseIdx i))
+  termination_by xs.size - i
+
+def isSafeIncreasingDampened (xs : Array Int) : Bool :=
+  let withOmissions := (iterateOmit xs).map isSafeIncreasing
+  withOmissions.any id
+
+def isSafeDecreasingDampened (xs : Array Int) : Bool :=
+  let withOmissions := (iterateOmit xs).map isSafeDecreasing
+  withOmissions.any id
+
+def isSafeDampened (xs : Array Int) : Bool :=
+  isSafeIncreasingDampened xs || isSafeDecreasingDampened xs
+
+def solvePartTwo (xss : Array (Array Int)) : Int :=
+  (xss.filter fun xs => isSafe xs || isSafeDampened xs).size
 
 def main : IO Unit := do
   let input ← getInput
@@ -30,3 +55,4 @@ def main : IO Unit := do
   | .none => IO.Process.exit 1
   | .some xss =>
     IO.println (solvePartOne xss)
+    IO.println (solvePartTwo xss)
